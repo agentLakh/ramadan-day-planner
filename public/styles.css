@@ -91,8 +91,8 @@ h1 {
     transform: scale(1.1);
 }
 .dark-mode {
-    background-color: #121212;
-    color: white;
+    background-color: #333;
+    color: black;
 }
 
 .ramadan-box {
