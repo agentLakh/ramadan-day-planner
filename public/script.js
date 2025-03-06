@@ -40,7 +40,7 @@ async function getHijriDate() {
         const weekday = data?.data.hijri.weekday.en
         hijriDate.innerText = weekday + " " + day + " " + month + " " + year
         dateDuJour.innerText = day
-        console.log(data.data);
+
 
 
     } catch (error) {
@@ -51,10 +51,26 @@ getHijriDate()
 // Obtenir les Heures de prières
 const api = "https://api.aladhan.com/v1/hijriCalendarByAddress/1446/9?address=Dakar,Senegal"
 const prayerTimes = document.getElementById("prayer_times")
+const fajr = document.getElementById("fajr")
+const dhuhr = document.getElementById("dhuhr")
+const asr = document.getElementById("asr")
+const maghrib = document.getElementById('maghrib')
+const isha = document.getElementById("isha")
+const sunset = document.getElementById("sunset")
 async function getPrayerTimes() {
     try {
         const response = await fetch(api)
         const data = await response.json()
+        const getPrayerTimes = data?.data?.slice(0, 7)
+        const prayerTimes = getPrayerTimes.map((item) => item.timings)
+        fajr.innerText = prayerTimes[0].Fajr
+        dhuhr.innerText = prayerTimes[0].Dhuhr
+        asr.innerText = prayerTimes[0].Asr
+        maghrib.innerText = prayerTimes[0].Maghrib
+        isha.innerText = prayerTimes[0].Isha
+        sunset.innerText = prayerTimes[0].Sunset
+        console.log(test[0]);
+
 
     } catch (error) {
         console.log(error);
@@ -118,7 +134,7 @@ function saveChecklist() {
 
     localStorage.setItem("ibadahChecklist", JSON.stringify({
         state: checklistState,
-        timestamp: new Date().getTime() 
+        timestamp: new Date().getTime()
     }));
 }
 
@@ -130,10 +146,10 @@ function loadChecklist() {
         const { state, timestamp } = JSON.parse(savedData);
 
         const now = new Date().getTime();
-        const twentyFourHours = 24 * 60 * 60 * 1000; 
+        const twentyFourHours = 24 * 60 * 60 * 1000;
 
         if (now - timestamp < twentyFourHours) {
-            
+
             Object.keys(state).forEach((key) => {
                 const checkbox = document.getElementById(key);
                 if (checkbox) {
@@ -141,7 +157,7 @@ function loadChecklist() {
                 }
             });
         } else {
-            
+
             localStorage.removeItem("ibadahChecklist");
         }
     }
@@ -154,3 +170,80 @@ document.querySelectorAll("#ibadahList input[type='checkbox']").forEach((checkbo
 
 
 document.addEventListener("DOMContentLoaded", loadChecklist);
+
+// 
+
+function saveGoalsToLocalStorage() {
+
+    const inputs = document.querySelectorAll('.lists input');
+    const goals = [];
+
+
+    inputs.forEach(input => {
+        if (input.value.trim() !== '') {
+            goals.push(input.value.trim());
+        }
+    });
+
+
+    localStorage.setItem('goals', JSON.stringify(goals));
+}
+
+
+document.querySelector('.lists').addEventListener('change', saveGoalsToLocalStorage);
+
+
+function loadGoalsFromLocalStorage() {
+    const savedGoals = JSON.parse(localStorage.getItem('goals')) || [];
+
+
+    const inputs = document.querySelectorAll('.lists input');
+    inputs.forEach((input, index) => {
+        if (savedGoals[index]) {
+            input.value = savedGoals[index];
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', loadGoalsFromLocalStorage);
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const calendar = document.getElementById("calendar");
+    const daysInMonth = 30;
+
+    let fastingData = JSON.parse(localStorage.getItem("fastingData")) || {};
+
+    for (let i = 1; i <= daysInMonth; i++) {
+        let dayDiv = document.createElement("div");
+        dayDiv.classList.add("day");
+        dayDiv.textContent = i;
+
+        if (fastingData[i] === "fasted") {
+            dayDiv.classList.add("fasted");
+        } else if (fastingData[i] === "to-catch-up") {
+            dayDiv.classList.add("to-catch-up");
+        }
+
+        dayDiv.addEventListener("click", function () {
+            if (dayDiv.classList.contains("fasted")) {
+                dayDiv.classList.remove("fasted");
+                dayDiv.classList.add("to-catch-up");
+                fastingData[i] = "to-catch-up";
+            } else if (dayDiv.classList.contains("to-catch-up")) {
+                dayDiv.classList.remove("to-catch-up");
+                delete fastingData[i]; 
+            } else {
+                dayDiv.classList.add("fasted");
+                fastingData[i] = "fasted";
+            }
+
+            // Sauvegarder dans le localStorage
+            localStorage.setItem("fastingData", JSON.stringify(fastingData));
+        });
+
+        calendar.appendChild(dayDiv);
+    }
+});
+
